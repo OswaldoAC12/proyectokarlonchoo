@@ -170,7 +170,7 @@ elif rol == "Cajero":
         if st.session_state.reservas:
             for reserva in st.session_state.reservas:
                 st.markdown(f"**{reserva['nombre']}** - Mesa: {reserva['mesa']} - Fecha: {reserva['fecha']}")
-        
+
         # Agregar nueva reserva
         st.subheader("📅 Registrar Nueva Reserva")
         
@@ -179,15 +179,28 @@ elif rol == "Cajero":
         mesa_reserva = st.number_input("Número de mesa", min_value=1, max_value=20, key="mesa_reserva")  # Cambia el límite según sea necesario
         fecha_reserva = st.text_input("Fecha y Hora (formato YYYY-MM-DD HH:MM)", key="fecha_reserva")
 
+        # Pago parcial de la reserva
+        pago_parcial = st.number_input("Pago Parcial", min_value=0.0, value=0.0, step=1.0, key="pago_parcial_reserva")
+
         if st.button("Registrar Reserva"):
             if nombre_reserva and mesa_reserva and fecha_reserva:
                 nueva_reserva = {
                     "nombre": nombre_reserva,
                     "fecha": fecha_reserva,
-                    "mesa": mesa_reserva
+                    "mesa": mesa_reserva,
+                    "pago_parcial": pago_parcial  # Guardamos el pago parcial
                 }
                 st.session_state.reservas.append(nueva_reserva)
-                st.success(f"Reserva registrada para {nombre_reserva} en la Mesa {mesa_reserva} a las {fecha_reserva}.")
+                
+                # Registrar el pago parcial como parte de las ventas
+                st.session_state.pagos.append({
+                    "mesa": mesa_reserva,
+                    "monto": pago_parcial,
+                    "fecha": datetime.now(),
+                    "metodo_pago": "Pago Parcial - Reserva"
+                })
+                
+                st.success(f"Reserva registrada para {nombre_reserva} en la Mesa {mesa_reserva} a las {fecha_reserva}. Pago parcial: S/ {pago_parcial:.2f}.")
             else:
                 st.warning("Por favor, completa todos los campos.")
 
@@ -239,6 +252,7 @@ elif rol == "Cajero":
                 st.markdown(f"Mesa #{pago['mesa']} - Monto: S/ {pago['monto']} - Fecha: {pago['fecha']} - Método de Pago: {pago['metodo_pago']}")
         else:
             st.info("No hay pagos registrados.")
+
 # ---------------- ADMINISTRADOR ----------------
 elif rol == "Administrador":
     st.title("🛠 Panel del Administrador")
